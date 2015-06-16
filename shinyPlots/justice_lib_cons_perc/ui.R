@@ -12,7 +12,9 @@ shinyUI(fluidPage(
                         "JPStevens", "LFPowell", "PStewart", "RBGinsburg", "RHJackson", "SAAlito",
                         "SDOConnor", "SFReed", "SGBreyer", "SMinton", "SSotomayor", "TCClark",
                         "TMarshall", "WBRutledge", "WEBurger", "WHRehnquist", "WJBrennan", "WODouglas"),
-                      selected = c("AFortas"))
+                      selected = c("AFortas")),
+          radioButtons("perc_count", "Select either Percentage of Cases or Counts.",
+                       choices = c("Percentage", "Counts"))
                       ),
         mainPanel(plotOutput("plot"))
         )

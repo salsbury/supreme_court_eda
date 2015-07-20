@@ -10,6 +10,15 @@ library(reshape2)
 #
 load("C:/Users/Sally/Desktop/data_analysis/supreme_court_eda/data/scdb_mod.RData")
 
+
+#
+# run code below for more select variables
+#
+
+sc_justices <- sc_justices %>%
+  select(justiceName, justice, caseName ,dateDecision, issue, issueArea, decisionDirection,
+         partyWinning, majOpinWriter, majVotes, minVotes, vote, opinion, direction, majority)
+
 #
 #
 #
@@ -117,7 +126,12 @@ perc_year <- issue_count_year %>% group_by(des_term_year) %>%
 issue_perc_year <- inner_join(issue_count_year, perc_year, by= c("des_term_year")) %>%
                         mutate(issue_perc = round(counts/sum_count, 3))
 
-# data wrangling to create data frame for shiny plot justice_lib_cons_perc
-justice_dir_per <- sc_justices %>%
-                      group_by(justiceName, )
+# count of conservative and Liberal over the years
+sc_justices %>%
+          mutate(Year = year(dateDecision)) %>%
+            group_by(Year, decisionDirection) %>%
+              tally() %>%
+                ggplot(aes(Year, n,
+                           colour = decisionDirection)) +
+                  geom_line() + geom_point()
 

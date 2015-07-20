@@ -3,6 +3,7 @@ library(plyr)
 library(dplyr)
 library(lubridate)
 library(reshape2)
+library(tidyr)
 
 # focusing on data analysis for the cases resided over by all current justices
 load("C:/Users/Sally/Desktop/data_analysis/supreme_court_eda/data/current_justices.RData")
@@ -122,3 +123,55 @@ issue_area_agree_perc %>%
             labs(x = "Issue Area",
               y = "Percentages",
                 title = "Comparing Issue Area Frequencies for 5 MajVote Cases, All Cases,\nand the Ratio Between the Two For Cases of Current Justices")
+
+
+#current justice party winning perc
+current_justices %>%
+  group_by(issueArea, partyWinning) %>%
+  summarise(count = n()) %>%
+  mutate(Percentage = round(count/sum(count), 3)) %>%
+    ggplot(aes(issueArea, Percentage, fill = partyWinning)) +
+      geom_bar(stat = "identity") +
+        theme(axis.text.x = element_text(angle = 90)) +
+          labs(title = "Current Justices Issue Area\nParty Winning Percentage")
+
+
+#current justice ratio of Conservative votes over liberal votes over the terms
+des_dates <- current_justices$dateDecision
+current_justices$des_term_year <- ifelse(month(des_dates) %in% c(1:8), year(des_dates) - 1, year(des_dates))
+
+current_justices %>% 
+  group_by(des_term_year, justiceName, direction) %>%
+  summarise(count = n()) %>%
+  filter(!is.na(direction)) %>%
+    spread(direction, count) %>%
+      mutate(Conserv_Ratio = round(Conservative/Liberal, 4)) %>%
+        ggplot(aes(des_term_year, Conserv_Ratio, 
+                   colour = justiceName, group = justiceName)) +
+            geom_line() + geom_point()
+
+#Majority Vote Counts Separated by Direction
+
+current_justices %>%
+    ggplot(aes(majVotes, fill = direction)) + 
+        geom_bar() +
+          labs(y = "Number of Cases",
+               x = "Number of Votes in the Majority",
+               title = "Count of Cases of the Current Justices Separated by Majority Votes")
+
+#looking at 9-0 decisions
+issue_area_count <- current_justices %>%
+        group_by(issueArea) %>%
+          tally()
+
+current_justices %>%
+      filter(majVotes == 9) %>%
+        group_by(issueArea) %>%
+          summarise(count_nine = n()) %>%
+            inner_join(issue_area_count) %>%
+              mutate(Percentage = round(count_nine/n, 4) * 100) %>%
+          ggplot(aes(issueArea, Percentage)) +
+            geom_bar(stat = "identity") +
+              theme(axis.text.x = element_text(angle = 90)) +
+                labs(x = "Issue Area",
+                     title = "Percentage of Cases Ending in a 9-0 Decision for Current Court")
